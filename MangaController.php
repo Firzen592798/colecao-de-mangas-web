@@ -64,6 +64,36 @@ class MangaController extends BaseController
         }
     }
 
+    public function salvarEmLoteAction(){
+        $strErrorDesc = '';
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        
+        $arrQueryStringParams = $this->getQueryStringParams();
+        
+        if (strtoupper($requestMethod) == 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $mangaLista = array();
+            //var_dump($data["usuario"]);
+            $idUsuario = $data["usuario"];
+            foreach($data["dados"] as $value){
+                $manga = new Manga($idUsuario, $value["key"], $value);
+                array_push($mangaLista, $manga);
+            }
+            //var_dump($mangaLista);
+            $mangaModel = new MangaModel();
+            $linhasInseridas = $mangaModel->salvarEmLote($mangaLista);
+            $responseData = '{"linhasInseridas": ' . $linhasInseridas .'}';
+            $this->sendOutput(
+                $responseData,
+                array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+            );
+            /*$manga = new Manga($data["id_usuario"], $data["chave"], $data["valor"]);
+            $manga->novo = $data["novo"];
+            $mangaModel = new MangaModel();
+            $manga = $mangaModel->salvarOuAtualizar($manga);*/
+        }
+    }
+
     public function cadastrarUsuarioAction(){
         $strErrorDesc = '';
         $requestMethod = $_SERVER["REQUEST_METHOD"];

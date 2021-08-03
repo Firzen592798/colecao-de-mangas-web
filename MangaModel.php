@@ -17,5 +17,28 @@ class MangaModel extends Database
         }
         return $this->executeStatement($sql);
     }
+
+    public function salvarEmLote($mangaLista){
+        $queryOk = true;
+        $linhasInseridas = 0;
+        $this->connection->autocommit(FALSE);
+        foreach($mangaLista as $manga){
+            //echo(json_encode($manga->valor));
+            $sql = "INSERT INTO manga (id_usuario, chave, valor) VALUES ('" . $manga->idUsuario . "', '" . $manga->chave . "', '" . json_encode($manga->valor) . "')";
+            //$this->executeStatement($sql);
+            $result = $this->connection->query($sql);
+            if(!$result){
+                $queryOk = false;
+                $linhasInseridas = 0;
+                break;
+            }else{
+                $linhasInseridas++;
+            }
+        }
+        if($queryOk){
+            $this->connection->commit();
+        }
+        return $linhasInseridas;
+    }
 }
 ?>
