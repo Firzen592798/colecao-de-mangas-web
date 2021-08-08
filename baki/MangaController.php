@@ -65,6 +65,7 @@ class MangaController extends BaseController
     }
 
     public function salvarEmLoteAction(){
+        
         $strErrorDesc = '';
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         
@@ -104,18 +105,17 @@ class MangaController extends BaseController
             $usuario = new Usuario($data["email"], $data["senha"]);
             $usuarioModel = new UsuarioModel();
             $usuario = $usuarioModel->salvarOuAtualizar($usuario);
-            if($usuario->idUsuario > 0){
-                $responseData = json_encode($usuario);
-                $this->sendOutput(
-                    $responseData,
-                    array('Content-Type: application/json', 'HTTP/1.1 200 OK')
-                );
-            }else{
-                $this->sendOutput(json_encode(array('mensagem' => 'Já existe um usuário com esse e-mail cadastrado')), 
-                    array('Content-Type: application/json', 'HTTP/1.1 400 Bad Request')
-                );
-            }
-           
+            
+            $responseData = json_encode($usuario);
+            //$responseData = '{"linhasDeletadas": ' . 1 .'}';
+            echo("Cadastrou com sucesso");
+            var_dump($responseData);
+            echo("Usuarioo cadastrado");
+            var_dump($usuario);
+            $this->sendOutput(
+                $responseData,
+                array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+            );
         }
     }
 
@@ -141,5 +141,6 @@ class MangaController extends BaseController
             );
         }
     }
+    
 }
 ?>
