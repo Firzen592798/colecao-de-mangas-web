@@ -18,7 +18,7 @@ class Database
         //$dbname = "id16636528_colecaodemangas";
         try {
             $this->connection = new mysqli($servername, $username, $password, $dbname);
-         
+            
             if ( mysqli_connect_errno()) {
                 throw new Exception("Could not connect to database.");   
             }
