@@ -3,9 +3,9 @@ require_once "Database.php";
  
 class MangaModel extends Database
 {
-    public function getMangas()
+    public function listMangasByUsuario($idUsuario)
     {
-        return $this->select("SELECT * FROM manga");
+        return $this->select("SELECT * FROM manga where id_usuario = " . $idUsuario);
     }
 
     public function salvarOuAtualizar(Manga $manga){
@@ -24,7 +24,7 @@ class MangaModel extends Database
         $this->connection->autocommit(FALSE);
         foreach($mangaLista as $manga){
             //echo(json_encode($manga->valor));
-            $sql = "INSERT INTO manga (id_usuario, chave, valor) VALUES ('" . $manga->idUsuario . "', '" . $manga->chave . "', '" . json_encode($manga->valor) . "')";
+            $sql = "INSERT INTO manga (id_usuario, chave, valor) VALUES ('" . $manga->idUsuario . "', '" . $manga->chave . "', '" . $this->connection->real_escape_string(json_encode($manga->valor)) . "')";
             //$this->executeStatement($sql);
             $result = $this->connection->query($sql);
             if(!$result){

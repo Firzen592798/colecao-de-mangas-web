@@ -15,15 +15,20 @@ class MangaController extends BaseController
  
         if (strtoupper($requestMethod) == 'GET') {
             try {
+                $idUsuario = $_GET['usuario'];
                 $mangaModel = new MangaModel();
- 
-                /*$intLimit = 10;
-                if (isset($arrQueryStringParams['limit']) && $arrQueryStringParams['limit']) {
-                    $intLimit = $arrQueryStringParams['limit'];
-                }*/
- 
-                $arrMangas = $mangaModel->getMangas();
-                $responseData = json_encode($arrMangas);
+                $arrMangas = $mangaModel->listMangasByUsuario($idUsuario);
+                $mangaLista = array();
+                $json = "[";
+                $ultimoItem = end($arrMangas);
+                foreach($arrMangas as $value){
+                    if($ultimoItem != $value){
+                        $json=$json . $value["valor"] . ",";
+                    }else{
+                        $json=$json . $value["valor"];
+                    }
+                }
+                $json = $json . "]";
             } catch (Error $e) {
                 $strErrorDesc = $e->getMessage().'Something went wrong! Please contact support.';
                 $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
@@ -36,7 +41,7 @@ class MangaController extends BaseController
         // send output
         if (!$strErrorDesc) {
             $this->sendOutput(
-                $responseData,
+                $json,
                 array('Content-Type: application/json', 'HTTP/1.1 200 OK')
             );
         } else {
@@ -47,7 +52,6 @@ class MangaController extends BaseController
     }
 
     public function postAction(){
-        echo("manga");
         $strErrorDesc = '';
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         
@@ -73,13 +77,11 @@ class MangaController extends BaseController
         if (strtoupper($requestMethod) == 'POST') {
             $data = json_decode(file_get_contents('php://input'), true);
             $mangaLista = array();
-            //var_dump($data["usuario"]);
             $idUsuario = $data["usuario"];
             foreach($data["dados"] as $value){
                 $manga = new Manga($idUsuario, $value["key"], $value);
                 array_push($mangaLista, $manga);
             }
-            //var_dump($mangaLista);
             $mangaModel = new MangaModel();
             $linhasInseridas = $mangaModel->salvarEmLote($mangaLista);
             $responseData = '{"linhasInseridas": ' . $linhasInseridas .'}';
@@ -87,10 +89,33 @@ class MangaController extends BaseController
                 $responseData,
                 array('Content-Type: application/json', 'HTTP/1.1 200 OK')
             );
-            /*$manga = new Manga($data["id_usuario"], $data["chave"], $data["valor"]);
-            $manga->novo = $data["novo"];
-            $mangaModel = new MangaModel();
-            $manga = $mangaModel->salvarOuAtualizar($manga);*/
+        }
+    }
+
+    public function loginAction(){
+        $strErrorDesc = '';
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        $arrQueryStringParams = $this->getQueryStringParams();
+        
+        if (strtoupper($requestMethod) == 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $email = $data["email"];
+            $senha = $data["senha"];
+            $usuarioModel = new UsuarioModel();
+            $usuarioLista = $usuarioModel->login($email, $senha);
+            if($usuarioLista){
+                $usuario = $usuarioLista[0];
+                $responseData = json_encode($usuario);
+                $this->sendOutput(
+                    $responseData,
+                    array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+                );
+            }else{
+                $this->sendOutput(json_encode(array('mensagem' => 'E-mail e/ou senha incorretos')), 
+                    array('Content-Type: application/json', 'HTTP/1.1 400 Bad Request')
+                );
+            }
+           
         }
     }
 
