@@ -5,17 +5,27 @@ class MangaModel extends Database
 {
     public function listMangasByUsuario($idUsuario)
     {
-        return $this->select("SELECT * FROM manga where id_usuario = " . $idUsuario);
+        return $this->select("SELECT id_manga, id_usuario, chave, valor FROM manga where id_usuario = " . $idUsuario);
+    }
+
+    public function findByChave($chave)
+    {
+        return $this->select("SELECT id_manga, id_usuario, chave, valor FROM manga where chave = " . $chave)[0];
     }
 
     public function salvarOuAtualizar(Manga $manga){
         if($manga->novo == FALSE){
-            $sql = "UPDATE manga SET valor = '" . $manga->valor . "' where chave = " . $manga->chave;
+            date_default_timezone_set("America/Sao_Paulo");
+            $sql = "UPDATE manga SET data_modificacao = '" .date("Y-m-d H:i:s") . "', valor = '" . $manga->valor . "' where chave = " . $manga->chave;
+            $this->executeStatement($sql);
+            return $this->findByChave($manga->chave);
         }else{
             $sql = "INSERT INTO manga (id_usuario, chave, valor)
                 VALUES ('" . $manga->idUsuario . "', '" . $manga->chave . "', '" . $manga->valor . "')";
-        }
-        return $this->executeStatement($sql);
+             $result = $this->executeStatement($sql);
+            $manga->idManga = $result->insert_id;
+            return $manga;
+        }    
     }
 
     public function salvarEmLote($mangaLista){
