@@ -22,7 +22,7 @@ class MangaModel extends Database
         }else{
             $sql = "INSERT INTO manga (id_usuario, chave, valor)
                 VALUES ('" . $manga->idUsuario . "', '" . $manga->chave . "', '" . $manga->valor . "')";
-             $result = $this->executeStatement($sql);
+            $result = $this->executeStatement($sql);
             $manga->idManga = $result->insert_id;
             return $manga;
         }    
@@ -33,9 +33,7 @@ class MangaModel extends Database
         $linhasInseridas = 0;
         $this->connection->autocommit(FALSE);
         foreach($mangaLista as $manga){
-            //echo(json_encode($manga->valor));
             $sql = "INSERT INTO manga (id_usuario, chave, valor) VALUES ('" . $manga->idUsuario . "', '" . $manga->chave . "', '" . $this->connection->real_escape_string(json_encode($manga->valor)) . "')";
-            //$this->executeStatement($sql);
             $result = $this->connection->query($sql);
             if(!$result){
                 $queryOk = false;
@@ -51,9 +49,57 @@ class MangaModel extends Database
         return $linhasInseridas;
     }
 
+    //Recebe uma lista de mangás que estão no aplicativo mas ainda não estão sincronizados no banco. Faz o devido tratamento para fazer ou insert ou update
+    public function sincronizarNaEntrada($mangaLista){
+        $queryOk = true;
+        $linhasAfetadas = 0;
+        $this->connection->autocommit(FALSE);
+        $chaves = array_map(function ($v){
+            return $v->chave;
+        },$mangaLista);
+        $chavesStr = implode(', ', $chaves);
+        //Procura os mangás no banco que correspondem às entradas passadas por parâmetro
+        $sql = "select distinct chave from manga where chave in(".$chavesStr.")";
+        $resultBanco = $this->select($sql);
+        foreach($mangaLista as $itemManga){ 
+            //Procura pelos mangás que já existem no banco de dados para decidir se fará o insert ou o update
+            $update = false;
+            foreach($resultBanco as $linha){
+                $chaveResultBanco =  $linha["chave"];
+                if($chaveResultBanco == $itemManga->chave){ // achou no banco -> fará o update e não o insert
+                    $update = true;
+                }
+            }
+            if($update){
+                date_default_timezone_set("America/Sao_Paulo");
+                $sql = "UPDATE manga SET data_modificacao = '" .date("Y-m-d H:i:s") . "', valor = '" . $this->connection->real_escape_string(json_encode($itemManga->valor)) . "' where chave = " . $itemManga->chave;
+            }else{
+                $sql = "INSERT INTO manga (id_usuario, chave, valor) VALUES ('" . $itemManga->idUsuario . "', '" . $itemManga->chave . "', '" . $this->connection->real_escape_string(json_encode($itemManga->valor)) . "')";
+            }
+            $resultInsertUpdateQuery = $this->connection->query($sql);
+            if(!$resultInsertUpdateQuery){
+                $queryOk = false;
+                $linhasAfetadas = 0;
+                break;
+            }else{
+                $linhasAfetadas++;
+            }
+        }
+        if($queryOk){
+            $this->connection->commit();
+        }
+        return $linhasAfetadas;
+    }
+
     public function deletarEmLoteByUsuario($usuarioId){
         $queryOk = true;
         $sql = "delete from manga where id_usuario = ".$usuarioId;
+        $result = $this->executeStatement($sql);
+        return $result->affected_rows;
+    }
+
+    public function deletarByUsuarioIdAndKey($usuarioId, $mangaKey){
+        $sql = "delete from manga where chave = '".$mangaKey . "' and id_usuario = ".$usuarioId;
         $result = $this->executeStatement($sql);
         return $result->affected_rows;
     }

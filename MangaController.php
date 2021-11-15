@@ -59,7 +59,6 @@ class MangaController extends BaseController
         
         if (strtoupper($requestMethod) == 'POST') {
             $data = json_decode(file_get_contents('php://input'), true);
-            //var_dump($data);
             $manga = new Manga($data["id_usuario"], $data["chave"], $data["valor"]);
             $manga->novo = $data["novo"];
             $mangaModel = new MangaModel();
@@ -69,11 +68,27 @@ class MangaController extends BaseController
                 $responseData,
                 array('Content-Type: application/json', 'HTTP/1.1 200 OK')
             );
-            //var_dump($manga);
         }
     }
 
+    //Remove um mangá de um usuário
     public function removerAction(){
+        $strErrorDesc = '';
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        $arrQueryStringParams = $this->getQueryStringParams();
+        if (strtoupper($requestMethod) == 'POST') {
+            $data = json_decode(file_get_contents('php://input'), true);
+            $mangaModel = new MangaModel();
+            $response = $mangaModel->deletarByUsuarioIdAndKey($data["id_usuario"], $data["chave"]);
+            $responseData = '{"linhasAfetadas": ' . $response .'}';
+            $this->sendOutput(
+                $responseData,
+                array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+            );
+        }
+    }
+
+    public function sincronizarNaEntradaAction(){
         $strErrorDesc = '';
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         
@@ -81,26 +96,27 @@ class MangaController extends BaseController
         
         if (strtoupper($requestMethod) == 'POST') {
             $data = json_decode(file_get_contents('php://input'), true);
-            //var_dump($data);
-            $manga = new Manga($data["id_usuario"], $data["chave"], $data["valor"]);
-            $manga->novo = $data["novo"];
+            $mangaLista = array();
+            $idUsuario = $data["usuario"];
+            foreach($data["dados"] as $value){
+                $manga = new Manga($idUsuario, $value["key"], $value);
+                array_push($mangaLista, $manga);
+            }
             $mangaModel = new MangaModel();
-            $manga = $mangaModel->salvarOuAtualizar($manga);
-            $responseData = json_encode($manga);
+            $linhasAfetadas = $mangaModel->sincronizarNaEntrada($mangaLista);
+            $responseData = '{"linhasAfetadas": ' . $linhasAfetadas .'}';
             $this->sendOutput(
                 $responseData,
                 array('Content-Type: application/json', 'HTTP/1.1 200 OK')
             );
-            //var_dump($manga);
         }
     }
 
+    //Roda quando um usuário acaba de se cadastrar e precisa salvar tudo que tem no banco de dados online de uma vez
     public function salvarEmLoteAction(){
         $strErrorDesc = '';
         $requestMethod = $_SERVER["REQUEST_METHOD"];
-        
         $arrQueryStringParams = $this->getQueryStringParams();
-        
         if (strtoupper($requestMethod) == 'POST') {
             $data = json_decode(file_get_contents('php://input'), true);
             $mangaLista = array();
@@ -132,7 +148,7 @@ class MangaController extends BaseController
             $usuarioLista = $usuarioModel->login($email, $senha);
             if($usuarioLista){
                 $usuario = $usuarioLista[0];
-                $responseData = json_encode($usuario);
+                $responseData = '{"idUsuario": ' . $usuario["id_usuario"] .', "email": "' . $usuario["email"] .'"}';
                 $this->sendOutput(
                     $responseData,
                     array('Content-Type: application/json', 'HTTP/1.1 200 OK')
