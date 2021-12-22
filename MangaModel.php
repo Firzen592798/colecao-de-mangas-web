@@ -51,6 +51,7 @@ class MangaModel extends Database
 
     //Recebe uma lista de mangás que estão no aplicativo mas ainda não estão sincronizados no banco. Faz o devido tratamento para fazer ou insert ou update
     public function sincronizarNaEntrada($mangaLista){
+        //echo(json_encode($mangaLista));
         $queryOk = true;
         $linhasAfetadas = 0;
         $this->connection->autocommit(FALSE);
@@ -60,6 +61,7 @@ class MangaModel extends Database
         $chavesStr = implode(', ', $chaves);
         //Procura os mangás no banco que correspondem às entradas passadas por parâmetro
         $sql = "select distinct chave from manga where chave in(".$chavesStr.")";
+        //echo($sql);
         $resultBanco = $this->select($sql);
         foreach($mangaLista as $itemManga){ 
             //Procura pelos mangás que já existem no banco de dados para decidir se fará o insert ou o update
@@ -76,6 +78,7 @@ class MangaModel extends Database
             }else{
                 $sql = "INSERT INTO manga (id_usuario, chave, valor) VALUES ('" . $itemManga->idUsuario . "', '" . $itemManga->chave . "', '" . $this->connection->real_escape_string(json_encode($itemManga->valor)) . "')";
             }
+            //echo($sql);
             $resultInsertUpdateQuery = $this->connection->query($sql);
             if(!$resultInsertUpdateQuery){
                 $queryOk = false;

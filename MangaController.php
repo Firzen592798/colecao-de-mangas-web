@@ -1,4 +1,3 @@
-
 <?php
 require "BaseController.php";
 require "MangaModel.php";
@@ -89,6 +88,7 @@ class MangaController extends BaseController
     }
 
     public function sincronizarNaEntradaAction(){
+        //echo("PHP");
         $strErrorDesc = '';
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         
@@ -155,7 +155,7 @@ class MangaController extends BaseController
                 );
             }else{
                 $this->sendOutput(json_encode(array('mensagem' => 'E-mail e/ou senha incorretos')), 
-                    array('Content-Type: application/json', 'HTTP/1.1 400 Bad Request')
+                    array('Content-Type: application/json', 'HTTP/1.1 500 Internal Server Error')
                 );
             }
            
@@ -180,7 +180,7 @@ class MangaController extends BaseController
                 );
             }else{
                 $this->sendOutput(json_encode(array('mensagem' => 'Já existe um usuário com esse e-mail cadastrado')), 
-                    array('Content-Type: application/json', 'HTTP/1.1 400 Bad Request')
+                    array('Content-Type: application/json', 'HTTP/1.1 500 Internal Server Error')
                 );
             }
            

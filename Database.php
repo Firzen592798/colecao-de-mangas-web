@@ -14,15 +14,17 @@ class Database
         $dbname = "colecao_mangas";
         #PRODUÇÃO
         //$username = "id16636528_firzen";
-        //$password = "AzkpfaC#O6luKwwK";
+        //$password = "88g5(jm3kf]!L*my";
         //$dbname = "id16636528_colecaodemangas";
         try {
             $this->connection = new mysqli($servername, $username, $password, $dbname);
-            
+            $this->connection->set_charset("utf8");
             if ( mysqli_connect_errno()) {
+                var_dump(mysqli_connect_errno());
                 throw new Exception("Could not connect to database.");   
             }
         } catch (Exception $e) {
+            var_dump($e);
             throw new Exception($e->getMessage());   
         }           
     }
