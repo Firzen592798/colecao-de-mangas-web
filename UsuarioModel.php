@@ -28,6 +28,42 @@ class UsuarioModel extends Database
         return $usuario;
     }
 
+    public function atualizarSenha($id, $senha){
+        $sql = "update usuario set codigo = null, senha = '" .$senha ."' where id_usuario = " . $id;
+        return $this->executeStatement($sql);
+    }
+
+    public function atualizarCodigo($id, $codigo){
+        $sql = "update usuario set codigo = " .$codigo ." where id_usuario = " . $id;
+        return $this->executeStatement($sql);
+    }
+
+    public function getUsuarioByIdAndSenha($id, $senha)
+    {   
+        $data = $this->select("SELECT * FROM usuario where id_usuario = " . $id ." and senha = '" . $senha ."'");
+        if($data){
+            $usuarioItem = $data[0];
+            $usuario = new Usuario($usuarioItem["email"], null);
+            $usuario->idUsuario=$usuarioItem["id_usuario"];
+        }else{
+            $usuario = null;
+        }
+        return $usuario;
+    }
+
+    public function getUsuarioByEmailAndCodigo($email, $codigo)
+    {   
+        $data = $this->select("SELECT * FROM usuario where email = '" . $email ."' and codigo = " . $codigo ."");
+        if($data){
+            $usuarioItem = $data[0];
+            $usuario = new Usuario($email, null);
+            $usuario->idUsuario=$usuarioItem["id_usuario"];
+        }else{
+            $usuario = null;
+        }
+        return $usuario;
+    }
+
     public function deleteById($idUsuario){
         $data = $this->executeStatement("delete FROM usuario where id_usuario = ?", ["i", $idUsuario]);
         return $data->affected_rows;

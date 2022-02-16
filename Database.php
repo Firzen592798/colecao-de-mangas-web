@@ -1,4 +1,5 @@
 <?php
+include("Secret.php");
 class Database
 {
 
@@ -7,15 +8,14 @@ class Database
     public function __construct()
     {
         $servername = "localhost";
-
         #LOCAL
         $username = "root";
         $password = "";
         $dbname = "colecao_mangas";
         #PRODUÇÃO
-        //$username = "id16636528_firzen";
-        //$password = "88g5(jm3kf]!L*my";
-        //$dbname = "id16636528_colecaodemangas";
+        //$username = USERNAME;
+        //$password = PASSWORD;
+        //$dbname = DBNAME;
         try {
             $this->connection = new mysqli($servername, $username, $password, $dbname);
             $this->connection->set_charset("utf8");

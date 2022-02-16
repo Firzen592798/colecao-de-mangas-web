@@ -89,6 +89,9 @@ class MangaModel extends Database
             }
         }
         if($queryOk){
+            //$sql = "DELETE from manga where id_usuario = ".$idUsuario." and chave not in(".$chavesStr.")";
+            //$this->connection->query($sql);
+            //echo($sql);
             $this->connection->commit();
         }
         return $linhasAfetadas;
