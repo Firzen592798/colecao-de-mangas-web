@@ -6,7 +6,6 @@ require "UsuarioModel.php";
 require "Usuario.php";
 require_once('class.smtp.php');
 require_once('class.phpmailer.php');
-include("Secret.php");
 class MangaController extends BaseController
 {
     public function listAction()

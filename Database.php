@@ -1,5 +1,4 @@
 <?php
-include("Secret.php");
 class Database
 {
 
