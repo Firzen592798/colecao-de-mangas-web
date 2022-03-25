@@ -4,10 +4,15 @@ require "MangaModel.php";
 require "Manga.php";
 require "UsuarioModel.php";
 require "Usuario.php";
+require_once "Secret.php";
 require_once('class.smtp.php');
 require_once('class.phpmailer.php');
 class MangaController extends BaseController
 {
+    public function contains(string $haystack, string $needle){
+        return '' === $needle || false !== strpos($haystack, $needle);
+    }
+
     public function listAction()
     {
         $strErrorDesc = '';
@@ -23,10 +28,15 @@ class MangaController extends BaseController
                 $json = "[";
                 $ultimoItem = end($arrMangas);
                 foreach($arrMangas as $value){
+                    $valor = $value["valor"];
+                    if(!$this->contains($valor, '"key":')){
+                        $valor = str_replace('"titulo":', '"key": "'.$value["chave"].'", 
+                        "titulo":', $valor);
+                    }
                     if($ultimoItem != $value){
-                        $json=$json . $value["valor"] . ",";
+                        $json=$json . $valor . ",";
                     }else{
-                        $json=$json . $value["valor"];
+                        $json=$json . $valor;
                     }
                 }
                 $json = $json . "]";
@@ -319,8 +329,10 @@ class MangaController extends BaseController
         $mail->Body = $message;
         $mail->isHTML(false);   // Set HTML type
         $mail->addAddress($to, $nameto);
-        //$mail->SMTPDebug = 2;
-        return $mail->send();
+        $mail->SMTPDebug = 1;
+        $result = $mail->send();
+        echo($mail->ErrorInfo);
+        return $result;
       }
 }
 ?>

@@ -1,4 +1,5 @@
 <?php
+require "Secret.php";
 class Database
 {
 
@@ -10,7 +11,7 @@ class Database
         #LOCAL
         $username = "root";
         $password = "";
-        $dbname = "colecao_mangas";
+        $dbname = "colecao_mangas_prod";
         #PRODUÇÃO
         //$username = USERNAME;
         //$password = PASSWORD;
